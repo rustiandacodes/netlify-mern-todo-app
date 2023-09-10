@@ -1,35 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 const Results = (props) => {
-  const [datas, setData] = useState([]);
-
-  const fetchData = async () => {
+  const getTodoList = async () => {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/.netlify/functions/api`);
     const result = await response.json();
-    setData(result);
+    props.setTodoList(result);
   };
 
   useEffect(() => {
-    fetchData();
+    getTodoList();
   }, []);
+
+  const handleDete = async (id) => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/.netlify/functions/api/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      props.setAlert({ msg: '❌ Failed to delete todo', status: 'failed' });
+    } else {
+      props.setAlert({ msg: '✅ Successfully to delete todo', status: 'success' });
+      getTodoList();
+    }
+  };
+
+  const handleUpdate = async (todo) => {
+    props.handleTemporaryTitle(todo.title);
+    props.handleTemporaryDescription(todo.description);
+    console.log(todo);
+  };
+
   return (
     <>
       <div className="container mx-auto py-32">
         <h2 className="text-xl font-bold text-teal-500 mb-10">Your Todo List :</h2>
-        {datas.map((data, i) => {
+        {props.todoList.toReversed().map((todo, i) => {
           return (
             <div key={i} className="bg-white py-10 flex justify-around items-center rounded-lg mb-10 md:px-10 px-5">
               <div className="w-[80%]">
-                <h3 className="text-lg font-bold text-teal-500">Some Title</h3>
-                <p>{data.data}</p>
+                <h3 className="text-lg font-bold text-teal-500">{todo.title}</h3>
+                <p>{todo.description}</p>
               </div>
               <div className="flex flex-col md:flex-row w-[20%] gap-2">
-                <p className="p-2 md:w-20 text-white font-semibold rounded-xl text-center cursor-pointer bg-red-500">Delete</p>
+                <p
+                  className="p-2 md:w-20 text-white font-semibold rounded-xl text-center cursor-pointer bg-red-500"
+                  onClick={() => {
+                    handleDete(todo._id);
+                  }}
+                >
+                  Delete
+                </p>
                 <p
                   className="p-2 md:w-20 text-white font-semibold rounded-xl text-center cursor-pointer bg-sky-500"
                   onClick={() => {
                     props.handlePopUp(true);
+                    handleUpdate(todo);
                   }}
                 >
                   Edit
@@ -47,12 +72,19 @@ const mapStateToProps = (state) => {
   return {
     todoList: state.todoList,
     popUp: state.updateFormPopUp,
+    alert: state.alert,
+    temporaryTodo: state.temporaryTodo,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
     handlePopUp: (result) => dispatch({ type: 'SET_POPUP', updateFormPopUp: result }),
+    setTodoList: (result) => dispatch({ type: 'SET_TODO', todoList: result }),
+    handleDeleteTodo: (result) => dispatch({ type: 'DELETE_TODO', deleteTodo: result }),
+    setAlert: (result) => dispatch({ type: 'SET_MESSAGE', alert: result }),
+    handleTemporaryTitle: (result) => dispatch({ type: 'TEMPORARY_TITLE', todo: result }),
+    handleTemporaryDescription: (result) => dispatch({ type: 'TEMPORARY_DESCRIPTION', todo: result }),
   };
 };
 
