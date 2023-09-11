@@ -5,6 +5,33 @@ const UpdateForm = (props) => {
   const labelWrapper = 'flex flex-col mb-5';
   const submitBtn = 'bg-teal-500 text-white p-3 rounded-lg font-bold';
 
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    const title = props.temporaryTitle;
+    const description = props.temporaryDescription;
+    const todo = { title, description };
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/.netlify/functions/api/${props.temporaryId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(todo),
+      headers: {
+        'Content-type': 'application/json',
+      },
+    });
+    props.handlePopUp(false);
+    if (!response.ok) {
+      props.setAlert({ msg: '❌ Failed to update todo', status: 'failed' });
+    } else {
+      props.setAlert({ msg: '✅ Successfully updated todo', status: 'success' });
+      getTodoList();
+    }
+  };
+
+  const getTodoList = async () => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/.netlify/functions/api`);
+    const result = await response.json();
+    props.setTodoList(result);
+  };
+
   return (
     <>
       <div className={`${props.popUp === true ? 'fixed' : 'hidden'} mt-32 w-full p-10 md:p-10 z-10`}>
@@ -43,7 +70,9 @@ const UpdateForm = (props) => {
               }}
             ></textarea>
           </div>
-          <button className={submitBtn}>Update</button>
+          <button className={submitBtn} onClick={(e) => handleUpdate(e)}>
+            Update
+          </button>
         </form>
       </div>
     </>
@@ -54,6 +83,7 @@ const mapStateToProps = (state) => {
   return {
     todoList: state.todoList,
     popUp: state.updateFormPopUp,
+    temporaryId: state.temporaryId,
     temporaryTitle: state.temporaryTitle,
     temporaryDescription: state.temporaryDescription,
   };
@@ -61,6 +91,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
+    setAlert: (result) => dispatch({ type: 'SET_MESSAGE', alert: result }),
+    setTodoList: (result) => dispatch({ type: 'SET_TODO', todoList: result }),
     handlePopUp: (result) => dispatch({ type: 'SET_POPUP', updateFormPopUp: result }),
     handleTemporaryTitle: (result) => dispatch({ type: 'TEMPORARY_TITLE', todo: result }),
     handleTemporaryDescription: (result) => dispatch({ type: 'TEMPORARY_DESCRIPTION', todo: result }),

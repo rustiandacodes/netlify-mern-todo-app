@@ -1,5 +1,6 @@
 const globalStore = {
   todoList: [''],
+  temporaryId: '',
   temporaryTitle: '',
   temporaryDescription: '',
   updateFormPopUp: false,
@@ -17,6 +18,11 @@ const rootReducer = (state = globalStore, action) => {
       return {
         ...state,
         todoList: state.todoList.concat(action.newTodo),
+      };
+    case 'TEMPORARY_ID':
+      return {
+        ...state,
+        temporaryId: action.todo,
       };
     case 'TEMPORARY_TITLE':
       return {

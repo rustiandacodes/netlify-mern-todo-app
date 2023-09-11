@@ -19,6 +19,12 @@ const CreateForm = (props) => {
     props.handleSubmit(json);
     setTitle('');
     setDescription('');
+    if (!response.ok) {
+      props.setAlert({ msg: '❌ Failed to create new todo', status: 'failed' });
+    } else {
+      props.setAlert({ msg: '✅ Successfully added todo', status: 'success' });
+      getTodoList();
+    }
   };
 
   const labelStyle = 'font-bold mb-3';
@@ -71,6 +77,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     handleSubmit: (result) => dispatch({ type: 'ADD_TODO', newTodo: result }),
+    setAlert: (result) => dispatch({ type: 'SET_MESSAGE', alert: result }),
   };
 };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { connect } from 'react-redux';
 
 const Results = (props) => {
@@ -19,15 +19,15 @@ const Results = (props) => {
     if (!response.ok) {
       props.setAlert({ msg: '❌ Failed to delete todo', status: 'failed' });
     } else {
-      props.setAlert({ msg: '✅ Successfully to delete todo', status: 'success' });
+      props.setAlert({ msg: '✅ Successfully deleted todo', status: 'success' });
       getTodoList();
     }
   };
 
   const handleUpdate = async (todo) => {
+    props.handleTemporaryId(todo._id);
     props.handleTemporaryTitle(todo.title);
     props.handleTemporaryDescription(todo.description);
-    console.log(todo);
   };
 
   return (
@@ -73,7 +73,7 @@ const mapStateToProps = (state) => {
     todoList: state.todoList,
     popUp: state.updateFormPopUp,
     alert: state.alert,
-    temporaryTodo: state.temporaryTodo,
+    temporaryId: state.temporaryId,
   };
 };
 
@@ -83,6 +83,7 @@ const mapDispatchToProps = (dispatch) => {
     setTodoList: (result) => dispatch({ type: 'SET_TODO', todoList: result }),
     handleDeleteTodo: (result) => dispatch({ type: 'DELETE_TODO', deleteTodo: result }),
     setAlert: (result) => dispatch({ type: 'SET_MESSAGE', alert: result }),
+    handleTemporaryId: (result) => dispatch({ type: 'TEMPORARY_ID', todo: result }),
     handleTemporaryTitle: (result) => dispatch({ type: 'TEMPORARY_TITLE', todo: result }),
     handleTemporaryDescription: (result) => dispatch({ type: 'TEMPORARY_DESCRIPTION', todo: result }),
   };
